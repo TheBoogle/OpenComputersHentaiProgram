@@ -46,6 +46,13 @@ local term = require('term')
 
 -- Begin Input
 
+term.clear()
+print('Starting Loop...')
+print('Please be patient')
+
+
+local FirstRun = true
+
 while true do
 	local DecidedType = PossibleTypes[math.random(1,#PossibleTypes)]
 	local BaseURL = 'http://riskyropes.com/funnyImage/' .. DecidedType
@@ -122,13 +129,18 @@ while true do
 		index = index + 1
 	end
 
-	term.clear()
+    if FirstRun == false then
+        os.sleep(30)
+    end
 
+    FirstRun = false
 
 	local percent = 50 / ImageSize[2]
 
 	local index = 1
 
+
+    
 	for y = 1, 50 do
 		for x = 1, 160 do
 			-- GPU.setBackground(Image[index])
@@ -141,5 +153,5 @@ while true do
 	for i = 1, 3 do
 		component.computer.beep(1500,.25)
 	end
-    os.sleep(30)
+    
 end
