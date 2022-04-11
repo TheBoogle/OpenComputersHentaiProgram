@@ -26,7 +26,7 @@ local PossibleTypes = {
 	'gangbang',
 	'ahegao',
 	'bdsm',
-	'blowjob','
+	'blowjob',
 }
 
 local component = require('component')
