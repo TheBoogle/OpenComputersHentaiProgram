@@ -33,7 +33,7 @@ local component = require('component')
 local GPU = component.gpu
 local Internet = component.internet
 
--- Custom Libraries 
+-- Custom Libraries
 -- wget -f URL FileName
 -- https://raw.githubusercontent.com/sziberov/OpenComputers/master/lib/json.lua
 -- https://raw.githubusercontent.com/IgorTimofeev/Color/master/Color.lua
@@ -52,7 +52,6 @@ print('Welcome to this Unfortunate Program')
 
 for i = 1, #PossibleTypes do
 	print(tostring(i) .. ') ' .. PossibleTypes[i])
-	os.sleep(0.05)
 end
 
 local DecidedType = PossibleTypes[io.read('*n')]
