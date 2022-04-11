@@ -33,7 +33,7 @@ local component = require('component')
 local GPU = component.gpu
 local Internet = component.internet
 
--- Custom Libraries
+-- Custom Libraries 
 -- wget -f URL FileName
 -- https://raw.githubusercontent.com/sziberov/OpenComputers/master/lib/json.lua
 -- https://raw.githubusercontent.com/IgorTimofeev/Color/master/Color.lua
