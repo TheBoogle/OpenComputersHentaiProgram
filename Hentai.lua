@@ -1,184 +1,116 @@
--- Add your things here.
-local PossibleTypes = {
-	'thighs',
-	'zettaiRyouiki',
-	'cum',
-	'hentai',
-	'pussy',
-	'ass',
-	'foot',
-	'uniform',
-	'tentacles',
-	'public',
-	'incest',
-	'yuri',
-	'masturbation',
-	'public',
-	'orgy',
-	'nsfwneko',
-	'sfwneko',
-	'boobjob',
-	'elves',
-	'femdom',
-	'glasses',
-	'creampie',
-	'panties',
-	'gangbang',
-	'ahegao',
-	'bdsm',
-	'blowjob',
-}
+local Hentai = {}
+Hentai.__index = Hentai
 
-local component = require('component')
-local GPU = component.gpu
-local Internet = component.internet
+local component = require("component")
+local gpu = component.gpu
 
--- Custom Libraries
--- wget -f URL FileName
--- https://raw.githubusercontent.com/sziberov/OpenComputers/master/lib/json.lua
--- https://raw.githubusercontent.com/IgorTimofeev/Color/master/Color.lua
-local JSON = assert(loadfile "JSON.lua")()
-local Color = assert(loadfile "Color.lua")()
+local internet = require("internet")
+local term = require("term")
+local JSON = assert(loadfile("JSON.lua"))()
+local Colors = assert(loadfile("Color.lua"))()
 
--- Built-in Libraries
-local InternetAPI = require('internet')
-local term = require('term')
+local function getResponse(URL)
+	local Response = internet.request(URL)
+	local ResponseString = ""
 
--- Begin Input
-
-term.clear()
-
-print('Welcome to this Unfortunate Program')
-
-for i = 1, #PossibleTypes do
-	print(tostring(i) .. ') ' .. PossibleTypes[i])
-end
-
-local DecidedType = PossibleTypes[io.read('*n')]
-
-term.clear()
-print('Loading ' .. DecidedType)
-
-
-local BaseURL = 'http://riskyropes.com/funnyImage/' .. DecidedType
-
-local Response = InternetAPI.request(BaseURL)
-
-local Content = ''
-
-for Data in Response do
-	Content = Content .. Data
-end
-
-local ImageURL = string.gsub(Content,'"','')
-
-print('Got Image')
-
-local BoogleAPIURL = 'http://riskyropes.com/api/JPGToStr?url='..ImageURL
-
-local ImageSize = InternetAPI.request('http://riskyropes.com/api/Res?url='..ImageURL)
-
-local Content = ''
-
-for Data in ImageSize do
-	Content = Content .. Data
-end
-
-ImageSize = JSON:decode(Content)
-
-print('Got Original Image Size')
-
-local BoogleResponse = InternetAPI.request(BoogleAPIURL)
-
-local Content = ''
-local index = 0
-for Data in BoogleResponse do
-	Content = Content .. Data:gsub(',','')
-	if index % 1000 == 0 then
-		os.sleep(.05)
-	end
-	index = index + 1
-end
-
-local Colors = {}
-
-print('Starting Color Processing')
-local index = 0
-for line in Content:gmatch("[^\r\n]+") do
-	local l = tonumber(line)
-    if l then
-		table.insert(Colors,l)
+	for Chunk in Response do
+		ResponseString = ResponseString .. Chunk
 	end
 
-	if index % 1000 == 0 then
-		print('...')
-		os.sleep(.05)
-	end
-
-	index = index + 1
-
+	return ResponseString
 end
 
-print('Got Colors')
+local function getJsonResponse(URL)
+	return JSON:decode(getResponse(URL))
+end
 
-local Image = {}
+function Hentai:genURL(Endpoint)
+	return self.BaseURL .. Endpoint
+end
 
-local index = 1
+function Hentai:drawImage(ColorString)
 
+	-- Split the string into a table
+	
+	local ColorTable = {}
 
-local function DrawPercentBar(Progress)
-	local percentBar = '['
-	for i = 1, 10 do
-		if Progress >= i then
-			percentBar = percentBar .. 'X'
-		else
-			percentBar = percentBar .. ' '
+	local CIndex = 1
+
+	for Color in ColorString:gmatch("%d+") do
+		local N = tonumber(Color)
+		
+		if N then
+			table.insert(ColorTable, N)
+		end
+
+		CIndex = CIndex + 1
+
+		if CIndex % 1000 == 0 then
+			os.sleep(0.05)
 		end
 	end
-	return percentBar .. ']' 
-end
 
-local LastProgress = 0
+	-- Process Colors
 
-local ExpectedAmount = #Colors / 3
+	local Image = {}
 
-local Divise=3
+	for ColorIndex = 1, #ColorTable, 3 do
+		local R = ColorTable[ColorIndex]
+		local G = ColorTable[ColorIndex + 1]
+		local B = ColorTable[ColorIndex + 2]
 
-if ExpectedAmount ~= math.floor(ExpectedAmount) then
-	ExpectedAmount = #Colors/4
-	Divise = 4
-end
+		if not R or not G or not B then break end
 
-for i = 1, #Colors,Divise do
-	pcall(function() Image[index] = Color.RGBToInteger(Colors[i],Colors[i + 1],Colors[i + 2]) end)
-	index = index + 1
-	local d = math.ceil((index/ExpectedAmount)*10)
-	if d ~= LastProgress then
-		term.clear()
-		print('Processing Image...')
-		print(DrawPercentBar(d))
-		os.sleep(0.1)
-		LastProgress = d
+		local FinalColor = Colors.RGBToInteger(R, G, B)
+		table.insert(Image, FinalColor)
+
+		if ColorIndex % 1000 == 0 then
+			os.sleep(0.05)
+		end
 	end
-end
 
-os.sleep(1)
-term.clear()
+	term.clear()
 
+	local ColorIndex = 1
 
-local percent = 50 / ImageSize[2]
+	for Y = 1, self.Height do
+		for X = 1, self.Width do
+			--if not Image[ColorIndex] then break end
+			
+			pcall(function() 
+				gpu.setForeground(Image[ColorIndex])
 
-local index = 1
+				gpu.fill(X, Y, 1, 1, "█")
+			end)
 
-for y = 1, 50 do
-	for x = 1, 160 do
-		-- GPU.setBackground(Image[index])
-		GPU.setForeground(Image[index])
-		GPU.fill(x, y, 1, 1, "█")
-		index = index + 1
+			ColorIndex = ColorIndex + 1
+
+			if ColorIndex % 1000 == 0 then
+				os.sleep(0.05)
+			end
+		end
 	end
+
+	for i = 1, 3 do
+		component.computer.beep(1500,.25)
+	end
+
 end
 
-for i = 1, 3 do
-	component.computer.beep(1500,.25)
+function Hentai:getRandomHentai()
+	return getResponse(self:genURL("/randomHentai/hentai"))
+end
+
+return function()
+	local Width, Height = gpu.getResolution()
+
+	local self = {
+		BaseURL = "http://riskyropes.com:5000/api",
+		Width = Width,
+		Height = Height
+	}
+
+	setmetatable(self, Hentai)
+
+	return self
 end
