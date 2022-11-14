@@ -7,6 +7,13 @@ local Hentai = assert(loadfile("Hentai.lua"))()
 local Colors = assert(loadfile("Color.lua"))()
 Hentai = Hentai()
 
+term.clear()
+
+print("Created by Boogle")
+print("Sorry it exists.")
+
+os.sleep(3)
+
 
 term.clear()
 
